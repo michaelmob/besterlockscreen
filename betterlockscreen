@@ -5,44 +5,44 @@
 # Project Repository : https://github.com/pavanjadhaw/betterlockscreen
 
 # find your resolution so images can be resized to match your screen resolution
-res=$(xdpyinfo | awk '/dimensions/{print $2}')
-locktext='Type password to unlock...'
+resolution=$(xdpyinfo | awk '/dimensions/{print $2}')
+lock_text='Type password to unlock...'
 
 
 init_filenames() {
 	#$1 resolution
 
-	# create folder in ~/.cache/i3lock directory
-	res_folder="$HOME/.cache/i3lock/$1"
-	folder="$HOME/.cache/i3lock/current"
-	echo "Got" $@ $res_folder
-	if [ ! -d $folder -o -n "$2" ]; then
-		rm -f $folder
-		ln -s $res_folder $folder
+	# create directory in ~/.cache/i3lock
+	local resolution_dir="$HOME/.cache/i3lock/$1"
+	dir="$HOME/.cache/i3lock/current"
+	echo "Got $@ $resolution_dir"
+	if [ ! -d $dir -o -n "$2" ]; then
+		rm -f $dir
+		ln -s $resolution_dir $dir
 	fi
 
 	# ratio for rectangle to be drawn for time background on lockscreen
 	# Original Image
-	orig_wall="$folder/wall.png"
+	orig_wall="$dir/wall.png"
 
 	# Versions (from here)
 	# You can use these images to set different versions as wallpaper
 	# lockscreen background.
-	resized="$folder/resized.png" # resized image for your resolution
+	resized="$dir/resized.png" # resized image for your resolution
 
 	# images to be used as wallpaper
-	dim="$folder/dim.png" # image with subtle overlay of black
-	blur="$folder/blur.png" # blurred version
-	dimblur="$folder/dimblur.png"
+	dim="$dir/dim.png" # image with subtle overlay of black
+	blur="$dir/blur.png" # blurred version
+	dimblur="$dir/dimblur.png"
 
 	# lockscreen images (images to be used as lockscreen background)
-	l_resized="$folder/l_resized.png"
-	l_dim="$folder/l_dim.png"
-	l_blur="$folder/l_blur.png"
-	l_dimblur="$folder/l_dimblur.png"
+	l_resized="$dir/l_resized.png"
+	l_dim="$dir/l_dim.png"
+	l_blur="$dir/l_blur.png"
+	l_dimblur="$dir/l_dimblur.png"
 }
 
-init_filenames $res
+init_filenames $resolution
 
 
 prelock() {
@@ -54,24 +54,24 @@ prelock() {
 
 lock() {
 	#$1 image path
-	letterEnteredColor=d23c3dff
-	letterRemovedColor=d23c3dff
-	passwordCorrect=00000000
-	passwordIncorrect=d23c3dff
-	background=00000000
-	foreground=ffffffff
+	local background='00000000'
+	local foreground='ffffffff'
+	local letter_entered_color='d23c3dff'
+	local letter_removed_color='d23c3dff'
+	local password_correct='00000000'
+	local password_incorrect='d23c3dff'
 	i3lock \
 		-t -i "$1" \
 		--timepos='x+110:h-70' \
 		--datepos='x+43:h-45' \
-		--clock --date-align 1 --datestr "$locktext" \
+		--clock --date-align 1 --datestr "$lock_text" \
 		--insidecolor=$background --ringcolor=$foreground --line-uses-inside \
-		--keyhlcolor=$letterEnteredColor --bshlcolor=$letterRemovedColor --separatorcolor=$background \
-		--insidevercolor=$passwordCorrect --insidewrongcolor=$passwordIncorrect \
+		--keyhlcolor=$letter_entered_color --bshlcolor=$letter_removed_color --separatorcolor=$background \
+		--insidevercolor=$password_correct --insidewrongcolor=$password_incorrect \
 		--ringvercolor=$foreground --ringwrongcolor=$foreground --indpos='x+280:h-70' \
 		--radius=20 --ring-width=4 --veriftext='' --wrongtext='' \
 		--verifcolor="$foreground" --timecolor="$foreground" --datecolor="$foreground" \
-		--noinputtext='' --force-clock $lockargs
+		--noinputtext='' --force-clock $lock_args
 }
 
 
@@ -138,12 +138,12 @@ update() {
 	done
 
 	# User supplied Image
-	user_image="$folder/user_image.png"
+	user_image="$dir/user_image.png"
 
-	# create folder
-	if [ ! -d $folder ]; then
-		echo "Creating '$folder' directory to cache processed images."
-		mkdir -p "$folder"
+	# create directory
+	if [ ! -d $dir ]; then
+		echo "Creating '$dir' directory to cache processed images."
+		mkdir -p "$dir"
 	fi
 
 	# get random file in dir if passed argument is a dir
@@ -168,7 +168,7 @@ update() {
 	echo
 	echo 'Converting provided image to match your resolution...'
 	# resize image
-	convert "$orig_wall" -resize "$res""^" -gravity center -extent "$res" "$resized"
+	convert "$orig_wall" -resize "$resolution""^" -gravity center -extent "$resolution" "$resized"
 
 	echo
 	echo 'Applying dim and blur effect to resized image'
@@ -182,7 +182,7 @@ update() {
 		-filter Gaussian \
 		-resize "$blur_shrink%" \
 		-define "filter:sigma=$blur_sigma" \
-		-resize "$res^" -gravity center -extent "$res" \
+		-resize "$resolution^" -gravity center -extent "$resolution" \
 		"$blur"
 
 	# dimblur
@@ -190,7 +190,7 @@ update() {
 		-filter Gaussian \
 		-resize "$blur_shrink%" \
 		-define "filter:sigma=$blur_sigma" \
-		-resize "$res^" -gravity center -extent "$res" \
+		-resize "$resolution^" -gravity center -extent "$resolution" \
 		"$dimblur"
 
 	# lockscreen backgrounds
@@ -335,13 +335,13 @@ for arg in "$@"; do
 			;;
 
 		-s | --suspend)
-			runsuspend=true
+			run_suspend=true
 			;&
 
 		-l | --lock)
 			runlock=true
-			[[ $runsuspend ]] || lockargs="$lockargs -n"
-			[[ ${2:0:1} = '-' ]] && shift 1 || { lockstyle="$2"; shift 2; }
+			[[ $run_suspend ]] || lock_args="$lock_args -n"
+			[[ ${2:0:1} = '-' ]] && shift 1 || { lock_style="$2"; shift 2; }
 			;;
 
 		-w | --wall | --wallpaper)
@@ -350,19 +350,19 @@ for arg in "$@"; do
 			;;
 
 		-u | --update)
-			runupdate=true
-			imagepath="$2"
+			run_update=true
+			image_path="$2"
 			shift 2
 			;;
 
 		-t | --text)
-			locktext="$2"
+			lock_text="$2"
 			shift 2
 			;;
 
 		-r | --resolution)
-			res="$2"
-			init_filenames $res force
+			resolution="$2"
+			init_filenames $resolution force
 			shift 2
 			;;
 
@@ -372,7 +372,7 @@ for arg in "$@"; do
 			;;
 
 		--)
-			lockargs="$lockargs ${@:2}"
+			lock_args="$lock_args ${@:2}"
 			break
 			;;
 
@@ -384,10 +384,10 @@ for arg in "$@"; do
 done
 
 # Run image generation
-[[ $runupdate ]] && update "$imagepath"
+[[ $run_update ]] && update "$image_path"
 
 # Activate lockscreen
-[[ $runlock ]] && lockselect "$lockstyle" && \
-	{ [[ $runsuspend ]] && systemctl suspend; }
+[[ $runlock ]] && lockselect "$lock_style" && \
+	{ [[ $run_suspend ]] && systemctl suspend; }
 
 exit 0
