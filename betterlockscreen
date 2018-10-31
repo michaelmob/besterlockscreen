@@ -6,24 +6,31 @@ resolution="$(xdpyinfo | awk '/dimensions/{print $2}')"
 # Path to 'current' cache directory.
 dir="$HOME/.cache/i3lock/current"
 
+# Effects to generate.
+generate_blur=true
+generate_dim=true
+generate_dimblur=true
+
 # Wallpaper paths.
-original="$dir/wall.png"
-resized="$dir/resized.png"
-user_image="$dir/user_image.png"
+image_path="$LOCKSCREEN_IMAGE"
+wallpaper_path="$dir/wallpaper.png"
+resized_path="$dir/resized.png"
 
 # Desktop wallpaper image paths.
-dim="$dir/dim.png"
-blur="$dir/blur.png"
-dimblur="$dir/dimblur.png"
+dim_path="$dir/dim.png"
+blur_path="$dir/blur.png"
+dimblur_path="$dir/dimblur.png"
 
 # Lockscreen wallpaper paths.
-l_resized="$dir/l_resized.png"
-l_dim="$dir/l_dim.png"
-l_blur="$dir/l_blur.png"
-l_dimblur="$dir/l_dimblur.png"
+l_resized_path="$dir/l_resized.png"
+l_dim_path="$dir/l_dim.png"
+l_blur_path="$dir/l_blur.png"
+l_dimblur_path="$dir/l_dimblur.png"
 
 # Default lockscreen option values.
-lock_text='Type password to unlock...'
+lock_text="${LOCKSCREEN_TEXT:-Type password to unlock...}"
+time_format="${LOCKSCREEN_TIME_FORMAT:-%r}"
+lock_effect="${LOCKSCREEN_EFFECT:-resized}"
 
 
 setup_resolution_directory() {
@@ -96,6 +103,7 @@ lock() {
 	i3lock \
 		--tiling \
 		--image "$1" \
+		--timestr "$time_format" \
 		--timepos 'x+40:h-70' \
 		--time-align 1 \
 		--datestr "$lock_text" \
@@ -136,22 +144,22 @@ activate() {
 	case "$1" in
 		dim)
 			# lockscreen with dimmed background
-			lock "$l_dim"
+			lock "$l_dim_path"
 			;;
 
 		blur)
 			# set lockscreen with blurred background
-			lock "$l_blur"
+			lock "$l_blur_path"
 			;;
 
 		dimblur)
 			# set lockscreen with dimmed + blurred background
-			lock "$l_dimblur"
+			lock "$l_dimblur_path"
 			;;
 
 		*)
 			# default lockscreen
-			lock "$l_resized"
+			lock "$l_resized_path"
 			;;
 	esac
 	postlock
@@ -177,6 +185,7 @@ update() {
 		y="$((${pos[1]} - 30))"
 		rectangle+="rectangle $x,$y $((x+300)),$((y-80)) "
 	done
+	local draw_arg="fill rgba(0, 0, 0, 0.4) $rectangle"
 
 	# Verify cache directory exists or create it.
 	if [[ ! -d "$dir" ]]; then
@@ -188,65 +197,64 @@ update() {
 	user_input="$(get_file $1)"
 
 	# Copy specified image to cache directory.
-	cp "$user_input" "$user_image"
-	if [ ! -f "$user_image" ]; then
-		echo 'Please specify the path to the image you would like to use'
+	cp "$user_input" "$wallpaper_path"
+	if [ ! -f "$wallpaper_path" ]; then
+		echo 'Image not found.'
 		exit 1
 	fi
-
-	# Copy $user_image to $original to process without ruining the image.
-	cp "$user_image" "$original"
-	rm "$user_image"
 
 	# Desktop Wallpapers
 	echo 'Generating various images based on the image you provided.'
 	echo 'Please wait as this may take a bit...'
 
 	# Resize
-	echo 'Converting the provided image to match your resolution.'
-	convert "$original" \
+	echo 'Resizing image to match your resolution.'
+	convert "$wallpaper_path" \
 		-resize "$resolution""^" \
 		-gravity 'center' \
 		-extent "$resolution" \
-		"$resized"
+		"$resized_path"
+	convert "$resized_path" -draw "$draw_arg" "$l_resized_path"
 
 	# Dim
-	echo 'Applying a dim effect to the image.'
-	convert "$resized" -fill black -colorize 40% "$dim"
+	if $generate_dim; then
+		echo 'Applying a dim effect.'
+		convert "$resized_path" -fill black -colorize 40% "$dim_path"
+		convert "$dim_path" -draw "$draw_arg" "$l_dim_path"
+	fi
 
 	# Blur
-	echo 'Applying a blur effect to the image.'
-	blur_shrink="$(echo "scale=2; 20 / $blur_level" | bc)"
-	blur_sigma="$(echo "scale=2; 0.6 * $blur_level" | bc)"
-	convert "$resized" \
-		-filter 'Gaussian' \
-		-resize "$blur_shrink%" \
-		-define "filter:sigma=$blur_sigma" \
-		-resize "$resolution^" \
-		-gravity 'center' \
-		-extent "$resolution" \
-		"$blur"
+	if $generate_blur; then
+		echo 'Applying a blur effect.'
+		blur_shrink="$(echo "scale=2; 20 / $blur_level" | bc)"
+		blur_sigma="$(echo "scale=2; 0.6 * $blur_level" | bc)"
+		convert "$resized_path" \
+			-filter 'Gaussian' \
+			-resize "$blur_shrink%" \
+			-define "filter:sigma=$blur_sigma" \
+			-resize "$resolution^" \
+			-gravity 'center' \
+			-extent "$resolution" \
+			"$blur_path"
+		convert "$blur_path" -draw "$draw_arg" "$l_blur_path"
+	fi
 
 	# Dimblur
-	echo 'Applying the dim and blur effects to the image.'
-	convert "$dim" \
-		-filter 'Gaussian' \
-		-resize "$blur_shrink%" \
-		-define "filter:sigma=$blur_sigma" \
-		-resize "$resolution^" \
-		-gravity 'center' \
-		-extent "$resolution" \
-		"$dimblur"
+	if $generate_dimblur; then
+		echo 'Applying the dim and blur effects.'
+		convert "$dim_path" \
+			-filter 'Gaussian' \
+			-resize "$blur_shrink%" \
+			-define "filter:sigma=$blur_sigma" \
+			-resize "$resolution^" \
+			-gravity 'center' \
+			-extent "$resolution" \
+			"$dimblur_path"
+		convert "$dimblur_path" -draw "$draw_arg" "$l_dimblur_path"
+	fi
 
 
 	# Lockscreen Wallpapers
-	echo 'Processing lockscreen wallpapers.'
-	local draw_arg="fill rgba(0, 0, 0, 0.4) $rectangle"
-	convert "$resized" -draw "$draw_arg" "$l_resized"
-	convert "$dim" -draw "$draw_arg" "$l_dim"
-	convert "$blur" -draw "$draw_arg" "$l_blur"
-	convert "$dimblur" -draw "$draw_arg" "$l_dimblur"
-	echo
 	echo 'All images have been created.'
 }
 
@@ -258,25 +266,25 @@ set_wallpaper() {
 	#	$1 -- image effect
 	#
 
-	local effect="$resized"
+	local effect="$resized_path"
 
 	# Select image effect.
 	case "$1" in
 		dim)
-			effect="$dim"
+			effect="$dim_path"
 			;;
 
 		blur)
-			effect="$blur"
+			effect="$blur_path"
 			;;
 
 		dimblur)
-			effect="$dimblur"
+			effect="$dimblur_path"
 			;;
 	esac
 
 	# Set desktop wallpaper.
-	feh --bg-fill $effect
+	feh --bg-fill "$effect"
 }
 
 
@@ -285,89 +293,85 @@ usage() {
 	# Show usage information.
 	#
 
-	echo 'Important: Update the image cache (e.g. betterlockscreen -u path/to/image.jpg).'
-	echo '	Image cache must be updated to initially configure or update wallpaper used'
+	echo 'Important: Update the image cache (betterlockscreen -u path/to/image.jpg).'
+	echo 'Image cache must be updated to initially configure or update wallpaper used'
 	echo
 	echo
-	echo 'See: https://github.com/pavanjadhaw/betterlockscreen for additional info...'
+	echo 'See: https://github.com/thetarkus/betterlockscreen for more info...'
 	echo
 	echo
 	echo 'Options:'
 	echo
-	echo '	-h --help'
-	echo '		For help (e.g. betterlockscreen -h or betterlockscreen --help).'
+	echo '	-h, --help'
+	echo '		For help (betterlockscreen -h or betterlockscreen --help).'
 	echo
 	echo
-	echo '	-u --update'
+	echo '	-u, --update'
 	echo '		to update image cache, you should do this before using any other options'
-	echo '		E.g: betterlockscreen -u path/to/image.png when image.png is custom background'
+	echo '		`betterlockscreen -u path/to/image.png` when image.png is custom background'
 	echo '		Or you can use betterlockscreen -u path/to/imagedir and a random file will be selected.'
+	echo '		Specify the default image path with the $LOCKSCREEN_IMAGE variable.'
 	echo
 	echo
-	echo '	-l --lock'
-	echo '		to lock screen (e.g. betterlockscreen -l)'
+	echo '	-l, --lock'
+	echo '		to lock screen (betterlockscreen -l)'
 	echo '		you can also use dimmed or blurred background for lockscreen.'
-	echo '		E.g: betterlockscreen -l dim (for dimmed background)'
-	echo '		E.g: betterlockscreen -l blur (for blurred background)'
-	echo '		E.g: betterlockscreen -l dimblur (for dimmed + blurred background)'
+	echo '		`betterlockscreen -l dim` (for dimmed background)'
+	echo '		`betterlockscreen -l blur` (for blurred background)'
+	echo '		`betterlockscreen -l dimblur` (for dimmed + blurred background)'
+	echo '		Specify the default effect with the $LOCKSCREEN_EFFECT environment variable.'
 	echo
 	echo
-	echo '	-s --suspend'
-	echo '		to suspend system and lock screen (e.g. betterlockscreen -s)'
+	echo '	-s, --suspend'
+	echo '		to suspend system and lock screen (betterlockscreen -s)'
 	echo '		you can also use dimmed or blurred background for lockscreen.'
-	echo '		E.g: betterlockscreen -s dim (for dimmed background)'
-	echo '		E.g: betterlockscreen -s blur (for blurred background)'
-	echo '		E.g: betterlockscreen -s dimblur (for dimmed + blurred background)'
+	echo '		`betterlockscreen -s dim` (for dimmed background)'
+	echo '		`betterlockscreen -s blur` (for blurred background)'
+	echo '		`betterlockscreen -s dimblur` (for dimmed + blurred background)'
 	echo
 	echo
-	echo '	-w --wall'
+	echo '	-w, --wall'
 	echo '		you can also set lockscreen background as wallpaper'
-	echo '		to set wallpaper (e.g. betterlockscreen -w or betterlockscreen --wall)'
+	echo '		to set wallpaper (betterlockscreen -w or betterlockscreen --wall)'
 	echo '		you can also use dimmed or blurred variants.'
-	echo '		E.g: betterlockscreen -w dim (for dimmed wallpaper)'
-	echo '		E.g: betterlockscreen -w blur (for blurred wallpaper)'
-	echo '		E.g: betterlockscreen -w dimblur (for dimmed + blurred wallpaper)'
+	echo '		`betterlockscreen -w dim` (for dimmed wallpaper)'
+	echo '		`betterlockscreen -w blur` (for blurred wallpaper)'
+	echo '		`betterlockscreen -w dimblur` (for dimmed + blurred wallpaper)'
 	echo
 	echo
-	echo '	-r --resolution'
+	echo '	-e, --effects'
+	echo '		to be used after -u'
+	echo '		select effects to generate; leave unset to generate all effects'
+	echo '		`betterlockscreen -e "blur,dim"`'
+	echo '		`betterlockscreen -e "dim"`'
+	echo
+	echo
+	echo '	-r, --resolution'
 	echo '		to be used after -u'
 	echo '		used to set a custom resolution for the image cache.'
-	echo '		E.g: betterlockscreen -u path/to/image.png -r 1920x1080'
-	echo '		E.g: betterlockscreen -u path/to/image.png --resolution 3840x1080'
+	echo '		`betterlockscreen -u path/to/image.png -r 1920x1080`'
+	echo '		`betterlockscreen -u path/to/image.png --resolution 3840x1080`'
 	echo
 	echo
-	echo '	-b --blur'
+	echo '	-b, --blur'
 	echo '		to be used after -u'
 	echo '		used to set blur intensity. Default to 1.'
-	echo '		E.g: betterlockscreen -u path/to/image.png -b 3'
-	echo '		E.g: betterlockscreen -u path/to/image.png --blur 0.5'
+	echo '		`betterlockscreen -u path/to/image.png -b 3`'
+	echo '		`betterlockscreen -u path/to/image.png --blur 0.5`'
 	echo
 	echo
-	echo '	-t --text'
+	echo '	-t, --text'
 	echo '		to set custom lockscreen text (max 31 chars)'
-	echo "		E.g: betterlockscreen -l dim -t \"Don't touch my machine!\""
-	echo '		E.g: betterlockscreen --text "Hi, user!" -s blur'
-}
-
-
-empty() {
-	#
-	# Show information about empty arguments.
-	#
-
-	if [ -f "$l_dim" ]; then
-		echo -e "\nSeems you haven't provided any arguments. See below for usage details."
-	else
-		echo 'Important: Update the image cache (e.g. betterlockscreen -u path/to/image.jpg).'
-		echo
-		echo '		Image cache must be updated to initially configure or update the wallpaper used.'
-	fi
-
+	echo "		\`betterlockscreen -l dim -t \"Don't touch my machine!\"\`"
+	echo '		`betterlockscreen --text "Hi, user!" -s blur`'
+	echo '		Specify the default text with the $LOCKSCREEN_TEXT variable.'
 	echo
-	echo 'For other sets of options and help, use the help command.'
-	echo 'e.g. betterlockscreen -h or betterlockscreen --help'
 	echo
-	echo 'See: https://github.com/pavanjadhaw/betterlockscreen for additional info...'
+	echo '	-f, --time-format'
+	echo '		to set custom time format (max 31 chars)'
+	echo "		\`betterlockscreen -l dim -t \"Don't touch my machine!\"\`"
+	echo '		`betterlockscreen --text "Hi, user!" -s blur`'
+	echo '		Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.'
 }
 
 
@@ -377,7 +381,7 @@ empty() {
 #
 
 # Check for empty argument.
-[[ "$1" = '' ]] && empty && exit 1
+[[ "$1" = '' ]] && usage && exit 1
 
 # Initialize directories.
 [[ -d "$dir" ]] || mkdir -p "$dir"
@@ -402,8 +406,9 @@ for arg in "$@"; do
 		# Lock screen.
 		-l | --lock)
 			run_lock=true
+			[[ "$2" ]] && lock_effect="$2"
 			[[ "$run_suspend" ]] || lock_args+=" -n"
-			[[ "${2:0:1}" = '-' ]] && shift 1 || { lock_effect="$2"; shift 2; }
+			[[ "${2:0:1}" = '-' ]] && shift 1 || shift 2
 			;;
 
 		# Set desktop wallpaper.
@@ -415,9 +420,24 @@ for arg in "$@"; do
 		# Update image caches.
 		-u | --update)
 			run_update=true
-			image_path="$2"
-			[[ "$image_path" ]] || { empty && exit 1; }
-			shift 2
+			[[ "$2" ]] && image_path="$2"
+			[[ "$image_path" ]] || { usage && exit 1; }
+			[[ "${2:0:1}" = '-' ]] && shift 1 || shift 2
+			;;
+
+		# Effects to process.
+		-e | --effects | --effect)
+			generate_blur=false
+			generate_dim=false
+			generate_dimblur=false
+			args=(${2//,/ })
+			for effect in "${args,,}"; do
+				case "$effect" in
+					blur) generate_blur=true ;; 
+					dim) generate_dim=true ;;
+					dimblur) generate_dimblur=true ;;
+				esac
+			done
 			;;
 
 		# Force custom resolution.
@@ -436,6 +456,12 @@ for arg in "$@"; do
 		# Set lockscreen text.
 		-t | --text)
 			lock_text="$2"
+			shift 2
+			;;
+
+		# Set time format.
+		-f | --time-format)
+			time_format="$2"
 			shift 2
 			;;
 
