@@ -74,7 +74,7 @@ prelock() {
 	# Commands to be ran before lockscreen has been activated.
 	#
 
-	[[ "$(pidof dunst)" ]] || pkill -u "$USER" -USR1 dunst
+	[[ "$(pidof dunst)" ]] && pkill -u "$USER" -USR1 dunst
 }
 
 
@@ -194,26 +194,30 @@ update() {
 	fi
 
 	# Get filepath.
-	user_input="$(get_file "$1")"
+	input_path="$(get_file "$1")"
 
 	# Copy specified image to cache directory.
-	cp "$user_input" "$wallpaper_path"
-	if [ ! -f "$wallpaper_path" ]; then
-		echo 'Image not found.'
-		exit 1
-	fi
+	cp "$input_path" "$wallpaper_path"
+	[[ ! -f "$wallpaper_path" ]] && echo 'Image not found.' && exit 1
 
 	# Desktop Wallpapers
 	echo 'Generating various images based on the image you provided.'
 	echo 'Please wait as this may take a bit...'
 
+	# Get image resolution
+	image_resolution="$(identify -format '%wx%h' "$input_path")"
+
 	# Resize
-	echo 'Resizing image to match your resolution.'
-	convert "$wallpaper_path" \
-		-resize "$resolution""^" \
-		-gravity 'center' \
-		-extent "$resolution" \
-		"$resized_path"
+	if [[ "$image_resolution" != "$resolution" ]]; then
+		echo "Resizing image from $image_resolution to $resolution."
+		convert "$wallpaper_path" \
+			-resize "$resolution""^" \
+			-gravity 'center' \
+			-extent "$resolution" \
+			"$resized_path"
+	else
+		cp "$wallpaper_path" "$resized_path"
+	fi
 	convert "$resized_path" -draw "$draw_arg" "$l_resized_path"
 
 	# Dim
