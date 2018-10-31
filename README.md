@@ -42,11 +42,7 @@
 ```sh
 git clone https://github.com/thetarkus/besterlockscreen
 cd besterlockscreen
-sudo make install  # Install besterlockscreen
-
-#
-
-sudo make install-systemd  # Install besterlockscreen and systemd service.
+sudo make install
 ```
 
 
@@ -206,6 +202,11 @@ alt + shift + x
 ## Activate lockscreen when sleeping/suspending (systemd service)
 
 ```sh
+# Install using make
+sudo make install-service
+
+# -- OR --
+
 # enable systemd service
 systemctl enable besterlockscreen@$USER
 
