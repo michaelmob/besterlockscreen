@@ -42,7 +42,7 @@
 ```sh
 git clone https://github.com/thetarkus/besterlockscreen
 cd besterlockscreen
-sudo make install
+make install
 ```
 
 
@@ -203,7 +203,7 @@ alt + shift + x
 
 ```sh
 # Install using make
-sudo make install-service
+make install-service
 
 # -- OR --
 
