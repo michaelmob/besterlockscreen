@@ -178,7 +178,7 @@ update() {
 
 	# Get position for translucent container box.
 	rectangle=" "
-	res_offset="$(xrandr --query | grep -oP ' connected \K(.*?) ')"
+	res_offset="$(xrandr --query | grep -oP ' connected(.*?)\K([\dx+]+) ')"
 	for res in $res_offset; do
 		pos=(${res//[x+]/ })
 		x="$((${pos[2]} + 25))"
@@ -194,7 +194,7 @@ update() {
 	fi
 
 	# Get filepath.
-	user_input="$(get_file $1)"
+	user_input="$(get_file "$1")"
 
 	# Copy specified image to cache directory.
 	cp "$user_input" "$wallpaper_path"
