@@ -1,18 +1,12 @@
-# betterlockscreen
-*A simple lock script for i3lock*
+# BESTerscreenlock
+*A fork of [betterscreenlock](betterlockscreen), originally by [pavanjadahaw](https://github.com/pavanjadhaw).*
 
-Most of i3lock script out there converts your defined image to add blur, glitch or dim effect to image and it feels so slow and btw who needs dynamic lock background,
-its not like I change lockscreen background every 5 minutes.
-I wanted something that was fast and still should have all the effects I want for lockscreen background.
-
-This script generates or already caches the variant for your custom images before hand so they can be later used any number of time as lockscreen background,
-without the need to apply same effect again and again
 
 ## Screenshots
 
-![scrot1](https://github.com/pavanjadhaw/betterlockscreen.demo/raw/master/scrots/scrot1.png "scrot1.png")
+![scrot1](https://i.imgur.com/v5iszK4.jpg "scrot1.png")
 
-![scrot2](https://github.com/pavanjadhaw/betterlockscreen.demo/raw/master/scrots/scrot2.png "scrot2.png")
+![scrot2](https://i.imgur.com/ZzCRta6.jpg "scrot2.png")
 
 ## In action
 
@@ -23,16 +17,12 @@ without the need to apply same effect again and again
 - **[Requirements](#requirements)**
     - [Dependencies](#dependencies)
 - **[Installation](#installation)**
-    - [Manual/Git install](#manualgit-install)
-    - [OS/Distro Packages](#osdistro-packages)
-        - [Arch Linux](#arch-linux)
-        - [Debian and derivatives](#debian-and-derivatives)
 - **[Usage](#usage)**
 - **[Desktop Background](#set-desktop-background-on-startup)**
 - **[Keybinding](#keybindings)**
     - [i3wm](#i3wm-1)
     - [bspwm](#bspwm)
-- **[Lockscreen whenever suspended](#lockscreen-when-suspendedsystemd-service)**
+- **[Activate lockscreen when sleeping/suspending](#lockscreen-when-suspendedsystemd-service)**
 
 
 ## Requirements
@@ -46,112 +36,133 @@ without the need to apply same effect again and again
 - [xdpyinfo](https://www.x.org/archive/X11R7.7/doc/man/man1/xdpyinfo.1.xhtml), [xrandr](https://www.x.org/wiki/Projects/XRandR/), [bc](https://www.gnu.org/software/bc/) and [feh](https://feh.finalrewind.org/)
 	- To find screen resolution, set custom blur level and wallpaper handling.
 
-Note: Make sure all dependencies are satisfied beforehand.
 
 ## Installation
 
-### Manual/Git install
-
 ```sh
-git clone https://github.com/pavanjadhaw/betterlockscreen 
-cd betterlockscreen
-cp betterlockscreen ~/.local/bin
+git clone https://github.com/thetarkus/besterlockscreen
+cd besterlockscreen
+sudo make install  # Install besterlockscreen
 
-# or wget the script ~12KB
-wget -O betterlockscreen https://git.io/fASUJ
-chmod u+x betterlockscreen
-cp betterlockscreen ~/.local/bin
+#
 
-# Add betterlockscreen to PATH:
-# (In your .bashrc, .zshrc etc)
-export PATH="${PATH}:${HOME}/.local/bin/"
+sudo make install-systemd  # Install besterlockscreen and systemd service.
 ```
-
-
-### OS/Distro Packages
-
-
-#### Arch Linux
-
-###### Installing dependencies(not required if using betterlockscreen aur package)
-`pacman -S imagemagick feh xorg-xrandr xorg-xdpyinfo`
-- i3lock-color
-	- `trizen -S i3lock-color`
-
-#### Aur package
-
-`betterlockscreen` is available in the Arch User repos as `betterlockscreen` and `betterlockscreen-git`.
-- betterlockscreen
-	- `trizen -S betterlockscreen`
-- betterlockscreen-git
-	- `trizen -S betterlockscreen-git`
-
-
-#### Debian and derivatives
-
-UtkarshVerma was so kind to provide an installation script for debian based systems, ![check it out here](https://github.com/UtkarshVerma/installer-scripts).
 
 
 
 ## Usage
 
-Run `betterlockscreen` and point it to either a directory (`betterlockscreen -u "path/to/dir"`) or an image (`betterlockscreen -u "/path/to/img.jpg"`) and that's all. `betterlockscreen` will change update its cache with image you provided.
+Run `besterlockscreen` and point it to a directory (`besterlockscreen -u "path/to/dir"`) or an image (`besterlockscreen -u "/path/to/img.jpg"`) and that's all. `besterlockscreen` will update its cache with the image you provide.
 
 ```sh
-usage: betterlockscreen [-u "path/to/img.jpg"] [-l "dim, blur or dimblur"]
+usage: besterlockscreen [-u "path/to/img.jpg"] [-l "dim, blur or dimblur"]
            [-w "dim, blur, or dimblur"] [-t "custom text"] [-s "lockscreen and suspend"]
 					 [-r "resolution"] [-b "factor"]
 
-betterlockscreen - faster and sweet looking lockscreen for linux systems.
+besterlockscreen - the bester lockscreen.
 
-required:
-	-u, --update "path/to/img.jpg"	caches all required images
+Options:
 
-usage:
-	-l, --lock effect-name
-			locks with provided effect
-	-w, --wall effect-name
-			set desktop background with provided effect
-	-s, --suspend effect-name
-			lockscreen and suspend
+        -h, --help
+                For help (besterlockscreen -h or besterlockscreen --help).
 
-			Available effects:
-				dim, blur or dimblur
 
-	-t, --text "custom text"
-			set custom lockscreen text
-	-b, blur 0.0 - 1.0
-			set blur range
-	-r, --resolution res
-			uses a custom resolution
+        -u, --update
+                to update image cache, you should do this before using any other options
+                `besterlockscreen -u path/to/image.png` when image.png is custom background
+                Or you can use besterlockscreen -u path/to/imagedir and a random file will be selected.
+                Specify the default image path with the $LOCKSCREEN_IMAGE variable.
+
+
+        -l, --lock
+                to lock screen (besterlockscreen -l)
+                you can also use dimmed or blurred background for lockscreen.
+                `besterlockscreen -l dim` (for dimmed background)
+                `besterlockscreen -l blur` (for blurred background)
+                `besterlockscreen -l dimblur` (for dimmed + blurred background)
+                Specify the default effect with the $LOCKSCREEN_EFFECT environment variable.
+
+
+        -s, --suspend
+                to suspend system and lock screen (besterlockscreen -s)
+                you can also use dimmed or blurred background for lockscreen.
+                `besterlockscreen -s dim` (for dimmed background)
+                `besterlockscreen -s blur` (for blurred background)
+                `besterlockscreen -s dimblur` (for dimmed + blurred background)
+
+
+        -w, --wall
+                you can also set lockscreen background as wallpaper
+                to set wallpaper (besterlockscreen -w or besterlockscreen --wall)
+                you can also use dimmed or blurred variants.
+                `besterlockscreen -w dim` (for dimmed wallpaper)
+                `besterlockscreen -w blur` (for blurred wallpaper)
+                `besterlockscreen -w dimblur` (for dimmed + blurred wallpaper)
+
+
+        -e, --effects
+                to be used after -u
+                select effects to generate; leave unset to generate all effects
+                `besterlockscreen -e "blur,dim"`
+                `besterlockscreen -e "dim"`
+
+
+        -r, --resolution
+                to be used after -u
+                used to set a custom resolution for the image cache.
+                `besterlockscreen -u path/to/image.png -r 1920x1080`
+                `besterlockscreen -u path/to/image.png --resolution 3840x1080`
+
+
+        -b, --blur
+                to be used after -u
+                used to set blur intensity. Default to 1.
+                `besterlockscreen -u path/to/image.png -b 3`
+                `besterlockscreen -u path/to/image.png --blur 0.5`
+
+
+        -t, --text
+                to set custom lockscreen text (max 31 chars)
+                `besterlockscreen -l dim -t "Don't touch my machine!"`
+                `besterlockscreen --text "Hi, user!" -s blur`
+                Specify the default text with the $LOCKSCREEN_TEXT variable.
+
+
+        -f, --time-format
+                to set custom time format (max 31 chars)
+                `besterlockscreen -l dim -t "Don't touch my machine!"`
+                `besterlockscreen --text "Hi, user!" -s blur`
+                Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.
 
 
 Usage examples:
-1. Updating image cache(required)
-betterlockscreen -u ~/Pictures/Forests.png # caches given image
-betterlockscreen -u ~/Pictures             # caches random image from ~/Pictures directory
+1. Updating image cache (required)
+besterlockscreen -u ~/Pictures/Forests.png # caches given image
+besterlockscreen -u ~/Pictures             # caches random image from ~/Pictures directory
+besterlockscreen -u                        # with $LOCKSCREEN_IMAGE environment variable set
 
 2. Custom resolution and blur range
-betterlockscreen -u path/to/directory -r 1920x1080 -b 0.5
+besterlockscreen -u path/to/directory -r 1920x1080 -b 0.5
 
 3. Lockscreen
-betterlockscreen -l dim                    # lockscreen with dim effect
+besterlockscreen -l dim                    # lockscreen with a dim effect
 
 4. Lockscreen with custom text
-betterlockscreen -l dim -t "custom lockscreen text"
+besterlockscreen -l dim -t "custom lockscreen text"
 
 5. Set desktop background
-betterlockscreen -w blur                   # set desktop background with blur effect
+besterlockscreen -w blur                   # set desktop background to have a blur effect
 ```
 
 
 ## Set desktop background on startup
 
-Add this line to `.xinitrc`.
-
 ```sh
+.xinitrc
+
 # set desktop background with custom effect
-betterlockscreen -w dim
+besterscreenlock -w dim
 
 # Alternative (set last used background)
 source ~/.fehbg
@@ -160,11 +171,11 @@ source ~/.fehbg
 
 #### i3wm
 
-Add this line to `~/.config/i3/config`
-
 ```sh
+~/.config/i3/config
+
 # set desktop background with custom effect
-exec --no-startup-id betterlockscreen -w dim
+exec --no-startup-id besterlockscreen -w dim
 
 # Alternative (set last used background)
 exec --no-startup-id source ~/.fehbg
@@ -175,48 +186,35 @@ exec --no-startup-id source ~/.fehbg
 
 #### i3wm
 
-Add this line to your `~/.config/i3/config`
-
 ```sh
-bindsym $mod+shift+x exec betterlockscreen -l dim
+~/.config/i3/config
+
+bindsym $mod+shift+x exec besterlockscreen -l dim
 ```
 
 #### bspwm
 
-Add this line to your `~/.config/sxhkd/sxhkdrc`
-
 ```sh
+~/.config/sxhkd/sxhkdrc
+
 # lockscreen
 alt + shift + x
-    betterlockscreen -l dim
+    besterlockscreen -l dim
 ```
 
 
-## Lockscreen when suspended(systemd service)
+## Activate lockscreen when sleeping/suspending (systemd service)
 
 ```sh
-# move service file to proper dir (the aur package does this for you)
-cp betterlockscreen@.service /etc/systemd/system/
+sudo make systemd
 
 # enable systemd service
-systemctl enable betterlockscreen@$USER
+systemctl enable besterlockscreen@$USER
 
 # disable systemd service
-systemctl disable betterlockscreen@$USER
+systemctl disable besterlockscreen@$USER
 
 
-# Note: Now you can call systemctl suspend to suspend your system
-# and betterlockscreen service will be activated
-# so when your system wakes your screen will be locked.
+# Note: Now you can run `systemctl suspend` to suspend your system
+# and besterlockscreen service will be activated.
 ```
-
-
----
-
-## Feel free to use and distribute
-
-This is my first bash script so if you think this could be improved or if you have any suggestion. Feel free.
-
-* Hat tip to anyone who's code was used
-* Thanks to those who contributed to make it better
-* Inspiration - r/unixporn
