@@ -1,5 +1,5 @@
-# BESTerscreenlock
-*A fork of [betterscreenlock](betterlockscreen), originally by [pavanjadahaw](https://github.com/pavanjadhaw).*
+# BESTerlockscreen
+*A fork of [betterlockscreen](betterlockscreen), originally by [pavanjadahaw](https://github.com/pavanjadhaw).*
 
 
 ## Screenshots
@@ -158,7 +158,7 @@ besterlockscreen -w blur                   # set desktop background to have a bl
 .xinitrc
 
 # set desktop background with custom effect
-besterscreenlock -w dim
+besterlockscreen -w dim
 
 # Alternative (set last used background)
 source ~/.fehbg
