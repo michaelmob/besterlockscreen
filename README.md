@@ -22,7 +22,7 @@
 - **[Keybinding](#keybindings)**
     - [i3wm](#i3wm-1)
     - [bspwm](#bspwm)
-- **[Activate lockscreen when sleeping/suspending](#lockscreen-when-suspendedsystemd-service)**
+- **[Activate lockscreen when sleeping/suspending](#activate-lockscreen-when-sleepingsuspending-systemd-service)**
 
 
 ## Requirements
@@ -57,8 +57,8 @@ Run `besterlockscreen` and point it to a directory (`besterlockscreen -u "path/t
 
 ```sh
 usage: besterlockscreen [-u "path/to/img.jpg"] [-l "dim, blur or dimblur"]
-           [-w "dim, blur, or dimblur"] [-t "custom text"] [-s "lockscreen and suspend"]
-					 [-r "resolution"] [-b "factor"]
+               [-w "dim, blur, or dimblur"] [-t "custom text"] [-s "lockscreen and suspend"]
+               [-r "resolution"] [-b "factor"]
 
 besterlockscreen - the bester lockscreen.
 
@@ -206,8 +206,6 @@ alt + shift + x
 ## Activate lockscreen when sleeping/suspending (systemd service)
 
 ```sh
-sudo make systemd
-
 # enable systemd service
 systemctl enable besterlockscreen@$USER
 
