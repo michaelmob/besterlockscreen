@@ -1,59 +1,92 @@
 #!/usr/bin/env bash
 
-# Author : Pavan Jadhaw
-# Github Profile : https://github.com/pavanjadhaw
-# Project Repository : https://github.com/pavanjadhaw/betterlockscreen
+# Screen resolution.
+resolution="$(xdpyinfo | awk '/dimensions/{print $2}')"
 
-# find your resolution so images can be resized to match your screen resolution
-resolution=$(xdpyinfo | awk '/dimensions/{print $2}')
+# Path to 'current' cache directory.
+dir="$HOME/.cache/i3lock/current"
+
+# Wallpaper paths.
+original="$dir/wall.png"
+resized="$dir/resized.png"
+user_image="$dir/user_image.png"
+
+# Desktop wallpaper image paths.
+dim="$dir/dim.png"
+blur="$dir/blur.png"
+dimblur="$dir/dimblur.png"
+
+# Lockscreen wallpaper paths.
+l_resized="$dir/l_resized.png"
+l_dim="$dir/l_dim.png"
+l_blur="$dir/l_blur.png"
+l_dimblur="$dir/l_dimblur.png"
+
+# Default lockscreen option values.
 lock_text='Type password to unlock...'
 
 
-init_filenames() {
-	#$1 resolution
+setup_resolution_directory() {
+	#
+	# Setup symlink of resolution.
+	# Arguments:
+	#	$1 -- screen resolution.
+	#
 
-	# create directory in ~/.cache/i3lock
+	# Create cache directory in '~/.cache/i3lock'.
 	local resolution_dir="$HOME/.cache/i3lock/$1"
-	dir="$HOME/.cache/i3lock/current"
-	echo "Got $@ $resolution_dir"
-	if [ ! -d $dir -o -n "$2" ]; then
-		rm -f $dir
-		ln -s $resolution_dir $dir
+	mkdir -p "$resolution_dir"
+
+	# Replace 'current' directory with forced resolution using a symlink.
+	if [[ ! -d "$dir" ]] || [[ "$2" ]]; then
+		rm -rf "$dir"
+		ln -s "$resolution_dir" "$dir"
 	fi
-
-	# ratio for rectangle to be drawn for time background on lockscreen
-	# Original Image
-	orig_wall="$dir/wall.png"
-
-	# Versions (from here)
-	# You can use these images to set different versions as wallpaper
-	# lockscreen background.
-	resized="$dir/resized.png" # resized image for your resolution
-
-	# images to be used as wallpaper
-	dim="$dir/dim.png" # image with subtle overlay of black
-	blur="$dir/blur.png" # blurred version
-	dimblur="$dir/dimblur.png"
-
-	# lockscreen images (images to be used as lockscreen background)
-	l_resized="$dir/l_resized.png"
-	l_dim="$dir/l_dim.png"
-	l_blur="$dir/l_blur.png"
-	l_dimblur="$dir/l_dimblur.png"
 }
 
-init_filenames $resolution
+
+get_file() {
+	#
+	# Verify file is not a directory.
+	# If $1 is a directory, find a file inside of it.
+	# Arguments:
+	#	$1 -- directory or filepath.
+	#
+
+	# Return path if not a directory.
+	[[ ! -d "$1" ]] && echo "$1" && return
+
+	# Get files in directory -> select one random file.
+	files=($1/*)
+	get_file "${files[RANDOM % ${#files[@]}]}"
+}
 
 
 prelock() {
-	if [ ! -z "$(pidof dunst)" ]; then
-		pkill -u "$USER" -USR1 dunst
-	fi
+	#
+	# Commands to be ran before lockscreen has been activated.
+	#
+
+	[[ "$(pidof dunst)" ]] || pkill -u "$USER" -USR1 dunst
+}
+
+
+postlock() {
+	#
+	# Commands to be ran after the lockscreen has been deactivated.
+	#
+
+	[[ "$(pidof dunst)" ]] || pkill -u "$USER" -USR2 dunst
 }
 
 
 lock() {
-	#$1 image path
+	#
+	# Run i3lock.
+	# Arguments:
+	# $1 -- image path
+	#
+
 	local background='00000000'
 	local foreground='ffffffff'
 	local letter_entered_color='d23c3dff'
@@ -61,40 +94,44 @@ lock() {
 	local password_correct='00000000'
 	local password_incorrect='d23c3dff'
 	i3lock \
-		-t -i "$1" \
-		--timepos='x+110:h-70' \
-		--datepos='x+43:h-45' \
-		--clock --date-align 1 --datestr "$lock_text" \
-		--insidecolor=$background --ringcolor=$foreground --line-uses-inside \
-		--keyhlcolor=$letter_entered_color --bshlcolor=$letter_removed_color --separatorcolor=$background \
-		--insidevercolor=$password_correct --insidewrongcolor=$password_incorrect \
-		--ringvercolor=$foreground --ringwrongcolor=$foreground --indpos='x+280:h-70' \
-		--radius=20 --ring-width=4 --veriftext='' --wrongtext='' \
-		--verifcolor="$foreground" --timecolor="$foreground" --datecolor="$foreground" \
-		--noinputtext='' --force-clock $lock_args
+		--tiling \
+		--image "$1" \
+		--timepos 'x+40:h-70' \
+		--time-align 1 \
+		--datestr "$lock_text" \
+		--datepos 'x+43:h-45' \
+		--date-align 1 \
+		--insidecolor "$background" \
+		--ringcolor "$foreground" \
+		--line-uses-inside \
+		--keyhlcolor "$letter_entered_color" \
+		--bshlcolor "$letter_removed_color" \
+		--separatorcolor "$background" \
+		--insidevercolor "$password_correct" \
+		--insidewrongcolor "$password_incorrect" \
+		--ringvercolor "$foreground" \
+		--ringwrongcolor "$foreground" \
+		--indpos 'x+280:h-70' \
+		--radius '20' \
+		--ring-width 4 \
+		--veriftext '' \
+		--wrongtext '' \
+		--verifcolor "$foreground" \
+		--timecolor "$foreground" \
+		--datecolor "$foreground" \
+		--noinputtext '' \
+		--force-clock \
+		$lock_args
 }
 
 
-postlock() {
-	if [ ! -z "$(pidof dunst)" ] ; then
-		pkill -u "$USER" -USR2 dunst
-	fi
-}
+activate() {
+	#
+	# Activate lockscreen with desired wallpaper effect.
+	# Arguments:
+	#	$1 -- image effect
+	#
 
-
-rec_get_random() {
-	dir="$1"
-	if [ ! -d "$dir" ]; then
-		user_input="$dir"
-		return
-	fi
-	dir=($dir/*)
-	dir=${dir[RANDOM % ${#dir[@]}]}
-	rec_get_random "$dir"
-}
-
-
-lockselect() {
 	prelock
 	case "$1" in
 		dim)
@@ -122,141 +159,132 @@ lockselect() {
 
 
 update() {
-	# use 
-	background="$1"
+	#
+	# Process image for use as the desktop or lockscreen wallpaper.
+	# Arguments:
+	#	$1 -- file or directory path
+	#
 
-	# default blur level; fallback to 1
+	# Default $blur_level to 1 if not already set.
 	[[ $blur_level ]] || blur_level=1
 
-	rectangles=" "
-	SR=$(xrandr --query | grep ' connected' | grep -o '[0-9][0-9]*x[0-9][0-9]*[^ ]*')
-	for RES in $SR; do
-		SRA=(${RES//[x+]/ })
-		CX=$((${SRA[2]} + 25))
-		CY=$((${SRA[1]} - 30))
-		rectangles+="rectangle $CX,$CY $((CX+300)),$((CY-80)) "
+	# Get position for translucent container box.
+	rectangle=" "
+	res_offset="$(xrandr --query | grep -oP ' connected \K(.*?) ')"
+	for res in $res_offset; do
+		pos=(${res//[x+]/ })
+		x="$((${pos[2]} + 25))"
+		y="$((${pos[1]} - 30))"
+		rectangle+="rectangle $x,$y $((x+300)),$((y-80)) "
 	done
 
-	# User supplied Image
-	user_image="$dir/user_image.png"
-
-	# create directory
-	if [ ! -d $dir ]; then
+	# Verify cache directory exists or create it.
+	if [[ ! -d "$dir" ]]; then
 		echo "Creating '$dir' directory to cache processed images."
 		mkdir -p "$dir"
 	fi
 
-	# get random file in dir if passed argument is a dir
-	rec_get_random "$background"
+	# Get filepath.
+	user_input="$(get_file $1)"
 
-	# get user image
+	# Copy specified image to cache directory.
 	cp "$user_input" "$user_image"
-	if [ ! -f $user_image ]; then
+	if [ ! -f "$user_image" ]; then
 		echo 'Please specify the path to the image you would like to use'
 		exit 1
 	fi
 
-	# replace orignal with user image
-	cp "$user_image" "$orig_wall"
+	# Copy $user_image to $original to process without ruining the image.
+	cp "$user_image" "$original"
 	rm "$user_image"
 
-	echo 'Generating alternate images based on the image you specified,'
-	echo 'please wait this might take few seconds...'
+	# Desktop Wallpapers
+	echo 'Generating various images based on the image you provided.'
+	echo 'Please wait as this may take a bit...'
 
-	# wallpapers
+	# Resize
+	echo 'Converting the provided image to match your resolution.'
+	convert "$original" \
+		-resize "$resolution""^" \
+		-gravity 'center' \
+		-extent "$resolution" \
+		"$resized"
 
-	echo
-	echo 'Converting provided image to match your resolution...'
-	# resize image
-	convert "$orig_wall" -resize "$resolution""^" -gravity center -extent "$resolution" "$resized"
-
-	echo
-	echo 'Applying dim and blur effect to resized image'
-	# dim
+	# Dim
+	echo 'Applying a dim effect to the image.'
 	convert "$resized" -fill black -colorize 40% "$dim"
 
-	# blur
-	blur_shrink=$(echo "scale=2; 20 / $blur_level" | bc)
-	blur_sigma=$(echo "scale=2; 0.6 * $blur_level" | bc)
+	# Blur
+	echo 'Applying a blur effect to the image.'
+	blur_shrink="$(echo "scale=2; 20 / $blur_level" | bc)"
+	blur_sigma="$(echo "scale=2; 0.6 * $blur_level" | bc)"
 	convert "$resized" \
-		-filter Gaussian \
+		-filter 'Gaussian' \
 		-resize "$blur_shrink%" \
 		-define "filter:sigma=$blur_sigma" \
-		-resize "$resolution^" -gravity center -extent "$resolution" \
+		-resize "$resolution^" \
+		-gravity 'center' \
+		-extent "$resolution" \
 		"$blur"
 
-	# dimblur
+	# Dimblur
+	echo 'Applying the dim and blur effects to the image.'
 	convert "$dim" \
-		-filter Gaussian \
+		-filter 'Gaussian' \
 		-resize "$blur_shrink%" \
 		-define "filter:sigma=$blur_sigma" \
-		-resize "$resolution^" -gravity center -extent "$resolution" \
+		-resize "$resolution^" \
+		-gravity 'center' \
+		-extent "$resolution" \
 		"$dimblur"
 
-	# lockscreen backgrounds
 
+	# Lockscreen Wallpapers
+	echo 'Processing lockscreen wallpapers.'
+	local draw_arg="fill rgba(0, 0, 0, 0.4) $rectangle"
+	convert "$resized" -draw "$draw_arg" "$l_resized"
+	convert "$dim" -draw "$draw_arg" "$l_dim"
+	convert "$blur" -draw "$draw_arg" "$l_blur"
+	convert "$dimblur" -draw "$draw_arg" "$l_dimblur"
 	echo
-	echo 'Caching images for faster screen locking'
-	# resized
-	convert "$resized" -draw "fill rgba(0, 0, 0, 0.4) $rectangles" "$l_resized"
-
-	# dim
-	convert "$dim" -draw "fill rgba(0, 0, 0, 0.4) $rectangles" "$l_dim"
-
-	# blur
-	convert "$blur" -draw "fill rgba(0, 0, 0, 0.4) $rectangles" "$l_blur"
-
-	# blur
-	convert "$dimblur" -draw "fill rgba(0, 0, 0, 0.4) $rectangles" "$l_dimblur"
-	echo
-	echo 'All required changes have been applied'
+	echo 'All images have been created.'
 }
 
 
-wallpaper() {
-	case "$1" in
-		'')
-			# set resized image as wallpaper if no argument is supplied by user
-			feh --bg-fill $resized
-			;;
+set_wallpaper() {
+	#
+	# Set desktop wallpaper.
+	# Arguments:
+	#	$1 -- image effect
+	#
 
+	local effect="$resized"
+
+	# Select image effect.
+	case "$1" in
 		dim)
-			# set dimmed image as wallpaper
-			feh --bg-fill $dim
+			effect="$dim"
 			;;
 
 		blur)
-			# set blurred image as wallpaper
-			feh --bg-fill $blur
+			effect="$blur"
 			;;
 
 		dimblur)
-			# set dimmed + blurred image as wallpaper
-			feh --bg-fill $dimblur
+			effect="$dimblur"
 			;;
 	esac
-}
 
-
-empty() {
-	if [ -f $l_dim ]; then
-		echo -e "\nSeems you haven't provided any arguments. See below for usage details."
-	else
-		echo 'Important: Update the image cache (e.g. betterlockscreen -u path/to/image.jpg).'
-		echo
-		echo '		Image cache must be updated to initially configure or update the wallpaper used.'
-	fi
-
-	echo
-	echo 'For other sets of options and help, use the help command.'
-	echo 'e.g. betterlockscreen -h or betterlockscreen --help'
-	echo
-	echo 'See: https://github.com/pavanjadhaw/betterlockscreen for additional info...'
-	exit 1
+	# Set desktop wallpaper.
+	feh --bg-fill $effect
 }
 
 
 usage() {
+	#
+	# Show usage information.
+	#
+
 	echo 'Important: Update the image cache (e.g. betterlockscreen -u path/to/image.jpg).'
 	echo '	Image cache must be updated to initially configure or update wallpaper used'
 	echo
@@ -322,72 +350,120 @@ usage() {
 }
 
 
-# Options
-[[ "$1" = '' ]] && empty
+empty() {
+	#
+	# Show information about empty arguments.
+	#
 
+	if [ -f "$l_dim" ]; then
+		echo -e "\nSeems you haven't provided any arguments. See below for usage details."
+	else
+		echo 'Important: Update the image cache (e.g. betterlockscreen -u path/to/image.jpg).'
+		echo
+		echo '		Image cache must be updated to initially configure or update the wallpaper used.'
+	fi
+
+	echo
+	echo 'For other sets of options and help, use the help command.'
+	echo 'e.g. betterlockscreen -h or betterlockscreen --help'
+	echo
+	echo 'See: https://github.com/pavanjadhaw/betterlockscreen for additional info...'
+}
+
+
+
+#
+# Options
+#
+
+# Check for empty argument.
+[[ "$1" = '' ]] && empty && exit 1
+
+# Initialize directories.
+[[ -d "$dir" ]] || mkdir -p "$dir"
+setup_resolution_directory "$resolution"
+
+# Parse all arguments.
 for arg in "$@"; do
 	[[ "${arg:0:1}" = '-' ]] || continue
 
 	case "$1" in
+		# Show usage details.
 		-h | --help)
 			usage
 			break
 			;;
 
+		# Set $run_suspend var and fall through to --lock
 		-s | --suspend)
 			run_suspend=true
 			;&
 
+		# Lock screen.
 		-l | --lock)
-			runlock=true
-			[[ $run_suspend ]] || lock_args="$lock_args -n"
-			[[ ${2:0:1} = '-' ]] && shift 1 || { lock_style="$2"; shift 2; }
+			run_lock=true
+			[[ "$run_suspend" ]] || lock_args+=" -n"
+			[[ "${2:0:1}" = '-' ]] && shift 1 || { lock_effect="$2"; shift 2; }
 			;;
 
+		# Set desktop wallpaper.
 		-w | --wall | --wallpaper)
-			wallpaper "$2"
+			set_wallpaper "$2"
 			shift 2
 			;;
 
+		# Update image caches.
 		-u | --update)
 			run_update=true
 			image_path="$2"
+			[[ "$image_path" ]] || { empty && exit 1; }
 			shift 2
 			;;
 
-		-t | --text)
-			lock_text="$2"
-			shift 2
-			;;
-
+		# Force custom resolution.
 		-r | --resolution)
 			resolution="$2"
-			init_filenames $resolution force
+			setup_resolution_directory "$resolution" 'force'
 			shift 2
 			;;
 
+		# Set custom blur level for processor.
 		-b | --blur)
 			blur_level="$2"
 			shift 2
 			;;
 
+		# Set lockscreen text.
+		-t | --text)
+			lock_text="$2"
+			shift 2
+			;;
+
+		# Leftover args to pass to i3lock.
 		--)
-			lock_args="$lock_args ${@:2}"
+			lock_args+=" ${@:2}"
 			break
 			;;
 
+		# Invalid arguments.
 		*)
-			echo "invalid argument: $1"
+			echo "Invalid argument: '$1'"
 			break
 			;;
 	esac
 done
 
-# Run image generation
-[[ $run_update ]] && update "$image_path"
 
-# Activate lockscreen
-[[ $runlock ]] && lockselect "$lock_style" && \
-	{ [[ $run_suspend ]] && systemctl suspend; }
+
+# Run image generation.
+[[ "$run_update" ]] && update "$image_path"
+
+# Verify wallpapers exist.
+[[ "$(dir $dir)" ]] || { empty && exit 1; }
+
+# Activate lockscreen and, optionally, suspend.
+[[ "$run_lock" ]] && activate "$lock_effect"
+[[ "$run_suspend" ]] && systemctl suspend
+
 
 exit 0
