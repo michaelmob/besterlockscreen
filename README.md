@@ -1,5 +1,5 @@
 # BESTerlockscreen
-*A fork of [betterlockscreen](betterlockscreen), originally by [pavanjadahaw](https://github.com/pavanjadhaw).*
+*A fork of [betterlockscreen](https://github.com/pavanjadhaw/betterlockscreen), originally by [pavanjadahaw](https://github.com/pavanjadhaw).*
 
 
 ## Screenshots
