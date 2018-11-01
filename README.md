@@ -4,9 +4,9 @@
 
 ## Screenshots
 
-![scrot1](https://i.imgur.com/rsPD4Ke.jpg "scrot1.png")
+![scrot1](https://i.imgur.com/L8nAVwc.jpg "scrot1.png")
 
-![scrot2](https://i.imgur.com/mYmGG10.jpg "scrot2.png")
+![scrot2](https://i.imgur.com/L8uwJ75.jpg "scrot2.png")
 
 
 ## Table of Contents
@@ -50,84 +50,86 @@ make install
 Run `besterlockscreen` and point it to a directory (`besterlockscreen -u "path/to/dir"`) or an image (`besterlockscreen -u "/path/to/img.jpg"`) and that's all. `besterlockscreen` will update its cache with the image you provide.
 
 ```sh
-usage: besterlockscreen [-u "path/to/img.jpg"] [-l "dim, blur or dimblur"]
-               [-w "dim, blur, or dimblur"] [-s "dim, blur or dimblur"]
-               [-r "resolution"] [-b "factor"] [-t "custom text"] [-f "time format"]
+Important: Update the image cache (besterlockscreen -u path/to/image.jpg).
+Image cache must be updated to initially configure or update wallpaper used
 
-besterlockscreen - the bester lockscreen.
+
+See: https://github.com/thetarkus/besterlockscreen for more info...
+
 
 Options:
 
-        -h, --help
-                For help (besterlockscreen -h or besterlockscreen --help).
+	-h, --help
+		For help (besterlockscreen -h or besterlockscreen --help).
 
 
-        -u, --update
-                to update image cache, you should do this before using any other options
-                `besterlockscreen -u path/to/image.png` when image.png is custom background
-                Or you can use besterlockscreen -u path/to/imagedir and a random file will be selected.
-                Specify the default image path with the $LOCKSCREEN_IMAGE variable.
+	-u, --update
+		to update image cache, you should do this before using any other options
+		`besterlockscreen -u path/to/image.png` when image.png is custom background
+		Or you can use besterlockscreen -u path/to/imagedir and a random file will be selected.
+		Specify the default image path with the $LOCKSCREEN_IMAGE variable.
+		pywal: if no value is given and variable is not set, your wallpaper will be used.
 
 
-        -l, --lock
-                to lock screen (besterlockscreen -l)
-                you can also use dimmed or blurred background for lockscreen.
-                `besterlockscreen -l dim` (for dimmed background)
-                `besterlockscreen -l blur` (for blurred background)
-                `besterlockscreen -l dimblur` (for dimmed + blurred background)
-                Specify the default effect with the $LOCKSCREEN_EFFECT environment variable.
+	-l, --lock
+		to lock screen (besterlockscreen -l)
+		you can also use dimmed or blurred background for lockscreen.
+		`besterlockscreen -l dim` (for dimmed background)
+		`besterlockscreen -l blur` (for blurred background)
+		`besterlockscreen -l dimblur` (for dimmed + blurred background)
+		Specify the default effect with the $LOCKSCREEN_EFFECT environment variable.
 
 
-        -s, --suspend
-                to suspend system and lock screen (besterlockscreen -s)
-                you can also use dimmed or blurred background for lockscreen.
-                `besterlockscreen -s dim` (for dimmed background)
-                `besterlockscreen -s blur` (for blurred background)
-                `besterlockscreen -s dimblur` (for dimmed + blurred background)
+	-s, --suspend
+		to suspend system and lock screen (besterlockscreen -s)
+		you can also use dimmed or blurred background for lockscreen.
+		`besterlockscreen -s dim` (for dimmed background)
+		`besterlockscreen -s blur` (for blurred background)
+		`besterlockscreen -s dimblur` (for dimmed + blurred background)
 
 
-        -w, --wall
-                you can also set lockscreen background as wallpaper
-                to set wallpaper (besterlockscreen -w or besterlockscreen --wall)
-                you can also use dimmed or blurred variants.
-                `besterlockscreen -w dim` (for dimmed wallpaper)
-                `besterlockscreen -w blur` (for blurred wallpaper)
-                `besterlockscreen -w dimblur` (for dimmed + blurred wallpaper)
+	-w, --wall
+		you can also set lockscreen background as wallpaper
+		to set wallpaper (besterlockscreen -w or besterlockscreen --wall)
+		you can also use dimmed or blurred variants.
+		`besterlockscreen -w dim` (for dimmed wallpaper)
+		`besterlockscreen -w blur` (for blurred wallpaper)
+		`besterlockscreen -w dimblur` (for dimmed + blurred wallpaper)
 
 
-        -e, --effects
-                to be used after -u
-                select effects to generate; leave unset to generate all effects
-                `besterlockscreen -e "blur,dim"`
-                `besterlockscreen -e "dim"`
+	-e, --effects
+		to be used after -u
+		select effects to generate; leave unset to generate all effects
+		`besterlockscreen -e "blur,dim"`
+		`besterlockscreen -e "dim"`
 
 
-        -r, --resolution
-                to be used after -u
-                used to set a custom resolution for the image cache.
-                `besterlockscreen -u path/to/image.png -r 1920x1080`
-                `besterlockscreen -u path/to/image.png --resolution 3840x1080`
+	-r, --resolution
+		to be used after -u
+		used to set a custom resolution for the image cache.
+		`besterlockscreen -u path/to/image.png -r 1920x1080`
+		`besterlockscreen -u path/to/image.png --resolution 3840x1080`
 
 
-        -b, --blur
-                to be used after -u
-                used to set blur intensity. Default to 1.
-                `besterlockscreen -u path/to/image.png -b 3`
-                `besterlockscreen -u path/to/image.png --blur 0.5`
+	-b, --blur
+		to be used after -u
+		used to set blur intensity. Default to 1.
+		`besterlockscreen -u path/to/image.png -b 3`
+		`besterlockscreen -u path/to/image.png --blur 0.5`
 
 
-        -t, --text
-                to set custom lockscreen text (max 31 chars)
-                `besterlockscreen -l dim -t "Don't touch my machine!"`
-                `besterlockscreen --text "Hi, user!" -s blur`
-                Specify the default text with the $LOCKSCREEN_TEXT variable.
+	-t, --text
+		to set custom lockscreen text (max 31 chars)
+		`besterlockscreen -l dim -t "Don't touch my machine!"`
+		`besterlockscreen --text "Hi, user!" -s blur`
+		Specify the default text with the $LOCKSCREEN_TEXT variable.
 
 
-        -f, --time-format
-                to set custom time format (max 31 chars)
-                `besterlockscreen -l dim -t "Don't touch my machine!"`
-                `besterlockscreen --text "Hi, user!" -s blur`
-                Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.
+	-f, --time-format
+		to set custom time format (max 31 chars)
+		`besterlockscreen -l dim -t "Don't touch my machine!"`
+		`besterlockscreen --text "Hi, user!" -s blur`
+		Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.
 ```
 
 
