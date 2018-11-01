@@ -9,11 +9,6 @@
 ![scrot2](https://i.imgur.com/mYmGG10.jpg "scrot2.png")
 
 
-## In action
-
-* [Demonstration](https://www.youtube.com/watch?v=9Ng5FZwnn6M&feature=youtu.be) - youtube.com
-
-
 ## Table of Contents
 
 - **[Requirements](#requirements)**
@@ -245,8 +240,4 @@ systemctl enable besterlockscreen@$USER
 
 # disable systemd service
 systemctl disable besterlockscreen@$USER
-
-
-# Note: Now you can run `systemctl suspend` to suspend your system
-# and besterlockscreen service will be activated.
 ```
