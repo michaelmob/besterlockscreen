@@ -420,7 +420,7 @@ for arg in "$@"; do
 		# Lock screen.
 		-l | --lock)
 			run_lock=true
-			[[ "$2" ]] && lock_effect="$2"
+			[[ -n "$2" ]] && lock_effect="$2"
 			[[ "$run_suspend" ]] || lock_args+=" -n"
 			[[ "${2:0:1}" = '-' ]] && shift 1 || shift 2
 			;;
@@ -434,7 +434,7 @@ for arg in "$@"; do
 		# Update image caches.
 		-u | --update)
 			run_update=true
-			[[ "$2" ]] && image_path="$2"
+			[[ -d "$2" ]] || [[ -f "$2" ]] && image_path="$2"
 			[[ "$image_path" ]] || { usage && exit 1; }
 			[[ "${2:0:1}" = '-' ]] && shift 1 || shift 2
 			;;
