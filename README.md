@@ -4,13 +4,15 @@
 
 ## Screenshots
 
-![scrot1](https://i.imgur.com/v5iszK4.jpg "scrot1.png")
+![scrot1](https://i.imgur.com/rsPD4Ke.jpg "scrot1.png")
 
-![scrot2](https://i.imgur.com/ZzCRta6.jpg "scrot2.png")
+![scrot2](https://i.imgur.com/mYmGG10.jpg "scrot2.png")
+
 
 ## In action
 
 * [Demonstration](https://www.youtube.com/watch?v=9Ng5FZwnn6M&feature=youtu.be) - youtube.com
+
 
 ## Table of Contents
 
@@ -25,6 +27,7 @@
 - **[Activate lockscreen when sleeping/suspending](#activate-lockscreen-when-sleepingsuspending-systemd-service)**
 
 
+
 ## Requirements
 
 ### Dependencies
@@ -37,6 +40,7 @@
 	- To find screen resolution, set custom blur level and wallpaper handling.
 
 
+
 ## Installation
 
 ```sh
@@ -46,15 +50,14 @@ make install
 ```
 
 
-
 ## Usage
 
 Run `besterlockscreen` and point it to a directory (`besterlockscreen -u "path/to/dir"`) or an image (`besterlockscreen -u "/path/to/img.jpg"`) and that's all. `besterlockscreen` will update its cache with the image you provide.
 
 ```sh
 usage: besterlockscreen [-u "path/to/img.jpg"] [-l "dim, blur or dimblur"]
-               [-w "dim, blur, or dimblur"] [-t "custom text"] [-s "lockscreen and suspend"]
-               [-r "resolution"] [-b "factor"]
+               [-w "dim, blur, or dimblur"] [-s "dim, blur or dimblur"]
+               [-r "resolution"] [-b "factor"] [-t "custom text"] [-f "time format"]
 
 besterlockscreen - the bester lockscreen.
 
@@ -130,26 +133,52 @@ Options:
                 `besterlockscreen -l dim -t "Don't touch my machine!"`
                 `besterlockscreen --text "Hi, user!" -s blur`
                 Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.
-
-
-Usage examples:
-1. Updating image cache (required)
-besterlockscreen -u ~/Pictures/Forests.png # caches given image
-besterlockscreen -u ~/Pictures             # caches random image from ~/Pictures directory
-besterlockscreen -u                        # with $LOCKSCREEN_IMAGE environment variable set
-
-2. Custom resolution and blur range
-besterlockscreen -u path/to/directory -r 1920x1080 -b 0.5
-
-3. Lockscreen
-besterlockscreen -l dim                    # lockscreen with a dim effect
-
-4. Lockscreen with custom text
-besterlockscreen -l dim -t "custom lockscreen text"
-
-5. Set desktop background
-besterlockscreen -w blur                   # set desktop background to have a blur effect
 ```
+
+
+### Examples
+```sh
+#
+# Updating Image Cache
+# ** Required before activating lockscreen **
+#
+
+# Generate image from filepath
+besterlockscreen -u ~/Pictures/Bird.jpg
+
+# Generate image from randomly selected file in path
+besterlockscreen -u ~/Pictures
+
+# Use environment variable as an alternative
+export LOCKSCREEN_IMAGE="~/Pictures/Bird.jpg"
+besterlockscreen -u
+
+# Using a custom resolution and blur range
+besterlockscreen -u ~/Pictures/Bird.jpg -r 2560x1440 -b 2
+
+
+#
+# Lockscreen
+#
+
+# Activate lockscreen without any effects
+besterlockscreen -l
+
+# Activate lockscreen with an effect
+besterlockscreen -l [dim|blur|dimblur]
+
+
+#
+# Desktop Wallpaper
+#
+
+# Set desktop wallpaper without any effects
+besterlockscreen -w
+
+# Set desktop wallpaper with an effect
+besterlockscreen -w [dim|blur|dimblur]
+```
+
 
 
 ## Set desktop background on startup
@@ -178,7 +207,9 @@ exec --no-startup-id source ~/.fehbg
 ```
 
 
+
 ## Keybindings
+
 
 #### i3wm
 
@@ -187,6 +218,7 @@ exec --no-startup-id source ~/.fehbg
 
 bindsym $mod+shift+x exec besterlockscreen -l dim
 ```
+
 
 #### bspwm
 
@@ -197,6 +229,7 @@ bindsym $mod+shift+x exec besterlockscreen -l dim
 alt + shift + x
     besterlockscreen -l dim
 ```
+
 
 
 ## Activate lockscreen when sleeping/suspending (systemd service)

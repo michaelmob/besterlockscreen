@@ -174,7 +174,7 @@ update() {
 	#
 
 	# Default $blur_level to 1 if not already set.
-	[[ $blur_level ]] || blur_level=1
+	[[ $blur_level ]] || blur_level=2
 
 	# Get position for translucent container box.
 	rectangle=" "
@@ -195,6 +195,7 @@ update() {
 
 	# Get filepath.
 	input_path="$(get_file "$1")"
+	echo "Using image: $input_path"
 
 	# Copy specified image to cache directory.
 	cp "$input_path" "$wallpaper_path"
