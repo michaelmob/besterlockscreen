@@ -49,7 +49,7 @@ make install
 
 Run `besterlockscreen` and point it to a directory (`besterlockscreen -u "path/to/dir"`) or an image (`besterlockscreen -u "/path/to/img.jpg"`) and that's all. `besterlockscreen` will update its cache with the image you provide.
 
-```sh
+```
 Important: Update the image cache (besterlockscreen -u path/to/image.jpg).
 Image cache must be updated to initially configure or update wallpaper used
 
