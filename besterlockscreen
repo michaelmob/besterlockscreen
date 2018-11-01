@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
+# Import colors from pywal
+[[ -f "$HOME/.cache/wal/colors.sh" ]] && source "$HOME/.cache/wal/colors.sh"
+
 # Screen resolution.
 resolution="$(xdpyinfo | awk '/dimensions/{print $2}')"
 
 # Path to 'current' cache directory.
 dir="$HOME/.cache/i3lock/current"
+
+# Color for graphics.
+indicator_color="${color2:-d23c3d}ff"
 
 # Effects to generate.
 generate_blur=true
@@ -12,7 +18,8 @@ generate_dim=true
 generate_dimblur=true
 
 # Wallpaper paths.
-image_path="$LOCKSCREEN_IMAGE"
+image_path="${LOCKSCREEN_IMAGE:-$wallpaper}"
+
 wallpaper_path="$dir/wallpaper.png"
 resized_path="$dir/resized.png"
 
@@ -96,12 +103,13 @@ lock() {
 
 	local background='00000000'
 	local foreground='ffffffff'
-	local letter_entered_color='d23c3dff'
-	local letter_removed_color='d23c3dff'
+	local letter_entered_color="$indicator_color"
+	local letter_removed_color="$indicator_color"
 	local password_correct='00000000'
-	local password_incorrect='d23c3dff'
+	local password_incorrect="$indicator_color"
 	i3lock \
 		--tiling \
+		--indicator \
 		--image "$1" \
 		--timestr "$time_format" \
 		--timepos 'x+40:h-70' \
@@ -316,6 +324,7 @@ usage() {
 	echo '		`besterlockscreen -u path/to/image.png` when image.png is custom background'
 	echo '		Or you can use besterlockscreen -u path/to/imagedir and a random file will be selected.'
 	echo '		Specify the default image path with the $LOCKSCREEN_IMAGE variable.'
+	echo '		pywal: if no value is given and variable is not set, your wallpaper will be used.'
 	echo
 	echo
 	echo '	-l, --lock'
