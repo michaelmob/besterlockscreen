@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
-# Import colors from pywal
-[[ -f "$HOME/.cache/wal/colors.sh" ]] && source "$HOME/.cache/wal/colors.sh"
+
+# Source from user's file
+if [[ -f "$LOCKSCREEN_SOURCE" ]]; then
+	source "$LOCKSCREEN_SOURCE"
+
+# Auto-source from wpgtk
+elif [[ -f "$HOME/.config/wpg/formats/colors.sh" ]]; then
+	source "$HOME/.config/wpg/formats/colors.sh"
+	wallpaper="$HOME/.config/wpg/.current"
+
+# Auto-source from wal
+elif [[ -f "$HOME/.cache/wal/colors.sh" ]]; then
+	source "$HOME/.cache/wal/colors.sh"
+fi
+
 
 # Screen resolution.
 resolution="$(xdpyinfo | awk '/dimensions/{print $2}')"
@@ -176,7 +189,7 @@ activate() {
 
 update() {
 	#
-	# Process image for use as the desktop or lockscreen wallpaper.
+	# Process image for use as the lockscreen wallpaper.
 	# Arguments:
 	#	$1 -- file or directory path
 	#
@@ -272,42 +285,13 @@ update() {
 }
 
 
-set_wallpaper() {
-	#
-	# Set desktop wallpaper.
-	# Arguments:
-	#	$1 -- image effect
-	#
-
-	local effect="$resized_path"
-
-	# Select image effect.
-	case "$1" in
-		dim)
-			effect="$dim_path"
-			;;
-
-		blur)
-			effect="$blur_path"
-			;;
-
-		dimblur)
-			effect="$dimblur_path"
-			;;
-	esac
-
-	# Set desktop wallpaper.
-	feh --bg-fill "$effect"
-}
-
-
 usage() {
 	#
 	# Show usage information.
 	#
 
 	echo 'Important: Update the image cache (besterlockscreen -u path/to/image.jpg).'
-	echo 'Image cache must be updated to initially configure or update wallpaper used'
+	echo 'Image cache must be updated to initially configure or update wallpaper used.'
 	echo
 	echo
 	echo 'See: https://github.com/thetarkus/besterlockscreen for more info...'
@@ -334,23 +318,6 @@ usage() {
 	echo '		`besterlockscreen -l blur` (for blurred background)'
 	echo '		`besterlockscreen -l dimblur` (for dimmed + blurred background)'
 	echo '		Specify the default effect with the $LOCKSCREEN_EFFECT environment variable.'
-	echo
-	echo
-	echo '	-s, --suspend'
-	echo '		to suspend system and lock screen (besterlockscreen -s)'
-	echo '		you can also use dimmed or blurred background for lockscreen.'
-	echo '		`besterlockscreen -s dim` (for dimmed background)'
-	echo '		`besterlockscreen -s blur` (for blurred background)'
-	echo '		`besterlockscreen -s dimblur` (for dimmed + blurred background)'
-	echo
-	echo
-	echo '	-w, --wall'
-	echo '		you can also set lockscreen background as wallpaper'
-	echo '		to set wallpaper (besterlockscreen -w or besterlockscreen --wall)'
-	echo '		you can also use dimmed or blurred variants.'
-	echo '		`besterlockscreen -w dim` (for dimmed wallpaper)'
-	echo '		`besterlockscreen -w blur` (for blurred wallpaper)'
-	echo '		`besterlockscreen -w dimblur` (for dimmed + blurred wallpaper)'
 	echo
 	echo
 	echo '	-e, --effects'
@@ -383,8 +350,8 @@ usage() {
 	echo
 	echo '	-f, --time-format'
 	echo '		to set custom time format (max 31 chars)'
-	echo "		\`besterlockscreen -l dim -t \"Don't touch my machine!\"\`"
-	echo '		`besterlockscreen --text "Hi, user!" -s blur`'
+	echo "		\`besterlockscreen -l dim -f \"%r\"\`"
+	echo '		`besterlockscreen --time-format "%H:%M:%S" -s blur`'
 	echo '		Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.'
 }
 
@@ -412,23 +379,11 @@ for arg in "$@"; do
 			break
 			;;
 
-		# Set $run_suspend var and fall through to --lock
-		-s | --suspend)
-			run_suspend=true
-			;&
-
 		# Lock screen.
 		-l | --lock)
 			run_lock=true
 			[[ -n "$2" ]] && lock_effect="$2"
-			[[ "$run_suspend" ]] || lock_args+=" -n"
 			[[ "${2:0:1}" = '-' ]] && shift 1 || shift 2
-			;;
-
-		# Set desktop wallpaper.
-		-w | --wall | --wallpaper)
-			set_wallpaper "$2"
-			shift 2
 			;;
 
 		# Update image caches.
@@ -501,9 +456,8 @@ done
 # Verify wallpapers exist.
 [[ "$(dir $dir)" ]] || { empty && exit 1; }
 
-# Activate lockscreen and, optionally, suspend.
+# Activate lockscreen
 [[ "$run_lock" ]] && activate "$lock_effect"
-[[ "$run_suspend" ]] && systemctl suspend
 
 
 exit 0

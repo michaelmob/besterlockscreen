@@ -15,11 +15,9 @@
     - [Dependencies](#dependencies)
 - **[Installation](#installation)**
 - **[Usage](#usage)**
-- **[Desktop Background](#set-desktop-background-on-startup)**
 - **[Keybinding](#keybindings)**
     - [i3wm](#i3wm-1)
     - [bspwm](#bspwm)
-- **[Activate lockscreen when sleeping/suspending](#activate-lockscreen-when-sleepingsuspending-systemd-service)**
 
 
 
@@ -27,21 +25,20 @@
 
 ### Dependencies
 
-- [i3lock-color](https://github.com/PandorasFox/i3lock-color)
-	- i3lock fork with additional features( >= 2.11-c )
+- [i3lock-color](https://github.com/PandorasFox/i3lock-color) >= 2.11-c
+	- i3lock fork with additional features
 - [imagemagick](https://www.imagemagick.org/script/index.php)
 	- To apply effects to images
-- [xdpyinfo](https://www.x.org/archive/X11R7.7/doc/man/man1/xdpyinfo.1.xhtml), [xrandr](https://www.x.org/wiki/Projects/XRandR/), [bc](https://www.gnu.org/software/bc/) and [feh](https://feh.finalrewind.org/)
-	- To find screen resolution, set custom blur level and wallpaper handling.
+- [xdpyinfo](https://www.x.org/archive/X11R7.7/doc/man/man1/xdpyinfo.1.xhtml), [xrandr](https://www.x.org/wiki/Projects/XRandR/), and [bc](https://www.gnu.org/software/bc/)
+	- To find screen resolution and set custom blur level.
 
 
 
 ## Installation
 
 ```sh
-git clone https://github.com/thetarkus/besterlockscreen
-cd besterlockscreen
-make install
+git clone https://github.com/thetarkus/besterlockscreen && cd besterlockscreen
+sudo make install
 ```
 
 
@@ -51,7 +48,7 @@ Run `besterlockscreen` and point it to a directory (`besterlockscreen -u "path/t
 
 ```
 Important: Update the image cache (besterlockscreen -u path/to/image.jpg).
-Image cache must be updated to initially configure or update wallpaper used
+Image cache must be updated to initially configure or update wallpaper used.
 
 
 See: https://github.com/thetarkus/besterlockscreen for more info...
@@ -78,23 +75,6 @@ Options:
 		`besterlockscreen -l blur` (for blurred background)
 		`besterlockscreen -l dimblur` (for dimmed + blurred background)
 		Specify the default effect with the $LOCKSCREEN_EFFECT environment variable.
-
-
-	-s, --suspend
-		to suspend system and lock screen (besterlockscreen -s)
-		you can also use dimmed or blurred background for lockscreen.
-		`besterlockscreen -s dim` (for dimmed background)
-		`besterlockscreen -s blur` (for blurred background)
-		`besterlockscreen -s dimblur` (for dimmed + blurred background)
-
-
-	-w, --wall
-		you can also set lockscreen background as wallpaper
-		to set wallpaper (besterlockscreen -w or besterlockscreen --wall)
-		you can also use dimmed or blurred variants.
-		`besterlockscreen -w dim` (for dimmed wallpaper)
-		`besterlockscreen -w blur` (for blurred wallpaper)
-		`besterlockscreen -w dimblur` (for dimmed + blurred wallpaper)
 
 
 	-e, --effects
@@ -127,8 +107,8 @@ Options:
 
 	-f, --time-format
 		to set custom time format (max 31 chars)
-		`besterlockscreen -l dim -t "Don't touch my machine!"`
-		`besterlockscreen --text "Hi, user!" -s blur`
+		`besterlockscreen -l dim -f "%r"`
+		`besterlockscreen --time-format "%H:%M:%S" -s blur`
 		Specify the default format with the $LOCKSCREEN_TIME_FORMAT variable.
 ```
 
@@ -163,46 +143,7 @@ besterlockscreen -l
 
 # Activate lockscreen with an effect
 besterlockscreen -l [dim|blur|dimblur]
-
-
-#
-# Desktop Wallpaper
-#
-
-# Set desktop wallpaper without any effects
-besterlockscreen -w
-
-# Set desktop wallpaper with an effect
-besterlockscreen -w [dim|blur|dimblur]
 ```
-
-
-
-## Set desktop background on startup
-
-```sh
-.xinitrc
-
-# set desktop background with custom effect
-besterlockscreen -w dim
-
-# Alternative (set last used background)
-source ~/.fehbg
-```
-
-
-#### i3wm
-
-```sh
-~/.config/i3/config
-
-# set desktop background with custom effect
-exec --no-startup-id besterlockscreen -w dim
-
-# Alternative (set last used background)
-exec --no-startup-id source ~/.fehbg
-```
-
 
 
 ## Keybindings
@@ -225,21 +166,4 @@ bindsym $mod+shift+x exec besterlockscreen -l dim
 # lockscreen
 alt + shift + x
     besterlockscreen -l dim
-```
-
-
-
-## Activate lockscreen when sleeping/suspending (systemd service)
-
-```sh
-# Install using make
-make install-service
-
-# -- OR --
-
-# enable systemd service
-systemctl enable besterlockscreen@$USER
-
-# disable systemd service
-systemctl disable besterlockscreen@$USER
 ```
