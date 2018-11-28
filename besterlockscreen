@@ -89,24 +89,6 @@ get_file() {
 }
 
 
-prelock() {
-	#
-	# Commands to be ran before lockscreen has been activated.
-	#
-
-	[[ "$(pidof dunst)" ]] && pkill -u "$USER" -USR1 dunst
-}
-
-
-postlock() {
-	#
-	# Commands to be ran after the lockscreen has been deactivated.
-	#
-
-	[[ "$(pidof dunst)" ]] || pkill -u "$USER" -USR2 dunst
-}
-
-
 lock() {
 	#
 	# Run i3lock.
@@ -161,7 +143,6 @@ activate() {
 	#	$1 -- image effect
 	#
 
-	prelock
 	case "$1" in
 		dim)
 			# lockscreen with dimmed background
@@ -183,7 +164,6 @@ activate() {
 			lock "$l_resized_path"
 			;;
 	esac
-	postlock
 }
 
 
